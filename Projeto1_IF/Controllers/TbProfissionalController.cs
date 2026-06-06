@@ -74,6 +74,7 @@ namespace Projeto1_IF.Controllers
                     await _context.SaveChangesAsync();
 
                     var userManager = HttpContext.RequestServices.GetService<UserManager<IdentityUser>>();
+                    // Logica diferente realizada para obter o email do usuário autenticado
                     if (userManager == null)
                         return NotFound();
 
