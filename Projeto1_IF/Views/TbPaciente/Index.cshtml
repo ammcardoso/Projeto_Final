@@ -1,0 +1,173 @@
+@model IEnumerable<Projeto1_IF.Models.TbPaciente>
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+<h1>Lista de Pacientes</h1>
+
+<p>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Cadastrar Paciente
+    </a>
+</p>
+<table class="table">
+    <thead>
+        <tr>
+            <th>
+                @Html.DisplayNameFor(model => model.Nome)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Rg)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Cpf)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.DataNascimento)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.NomeResponsavel)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Sexo)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Etnia)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Endereco)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Bairro)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TelResidencial)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TelComercial)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.TelCelular)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.Profissao)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FlgAtleta)
+            </th>
+            <th>
+                @Html.DisplayNameFor(model => model.FlgGestante)
+            </th>
+            <th></th>
+        </tr>
+    </thead>
+    <tbody>
+@foreach (var item in Model) {
+        <tr>
+            <td>
+                @Html.DisplayFor(modelItem => item.Nome)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Rg)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Cpf)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.DataNascimento)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.NomeResponsavel)
+            </td>
+            <td>
+                @switch (item.Sexo?.ToString())
+                {
+                    case "F":
+                        <span>Feminino</span>
+                        break;
+                    case "M":
+
+                        <span>Masculino</span>
+                        break;
+                    case "O":
+
+                        <span>Outros</span>
+                        break;
+                    default:
+
+                        <span>Não Informado</span>
+                        break;
+                }
+            </td>
+            <td>
+                @switch (item.Etnia.ToString())
+                {
+                    case "1":
+                        <span>Pardo</span>
+                        break;
+                    case "2":
+
+                        <span>Preto</span>
+                        break;
+                    case "3":
+
+                        <span>Branco</span>
+                        break;
+                    case "4":
+
+                        <span>Amarelo</span>
+                        break;
+                    case "5":
+
+                        <span>Outro</span>
+                        break;
+                    default:
+
+                        <span>Não Informado</span>
+                        break;
+                }
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Endereco)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Bairro)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TelResidencial)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TelComercial)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.TelCelular)
+            </td>
+            <td>
+                @Html.DisplayFor(modelItem => item.Profissao)
+            </td>
+            <td>
+                @(item.FlgAtleta == true ? "Sim" : item.FlgAtleta == false ? "Não" : "Não Informado")
+            </td>
+            <td>
+                @(item.FlgGestante == true ? "Sim" : item.FlgGestante == false ? "Não" : "Não Informado")
+            </td>
+            <td>
+                <div class="d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@item.IdPaciente" class="btn btn-primary btn-sm" title="Editar">
+                        <i class="bi bi-pencil-square me-1"></i> Editar
+                    </a>
+
+                    <a asp-action="Details" asp-route-id="@item.IdPaciente" class="btn btn-warning btn-sm text-dark" title="Detalhes">
+                        <i class="bi bi-eye me-1"></i> Detalhes
+                    </a>
+
+                    <a asp-action="Delete" asp-route-id="@item.IdPaciente" class="btn btn-danger btn-sm" title="Excluir">
+                        <i class="bi bi-trash me-1"></i> Excluir
+                    </a>
+                </div>
+            </td>
+        </tr>
+}
+    </tbody>
+</table>

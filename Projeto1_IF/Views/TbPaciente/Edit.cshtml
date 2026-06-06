@@ -1,0 +1,137 @@
+@model Projeto1_IF.Models.TbPaciente
+
+@{
+    ViewData["Title"] = "Edit";
+}
+
+<h1>Editar</h1>
+
+<h4>Paciente</h4>
+<hr />
+<div class="row">
+    <div class="col-md-4">
+        <form asp-action="Edit" id="formCadastroPaciente">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+            <input type="hidden" asp-for="IdPaciente" />
+            <div class="form-group">
+                <label asp-for="Nome" class="control-label"></label>
+                <input asp-for="Nome" class="form-control" required />
+                <span asp-validation-for="Nome" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Rg" class="control-label"></label>
+                <input asp-for="Rg" class="form-control" required />
+                <span asp-validation-for="Rg" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Cpf" class="control-label"></label>
+                <input asp-for="Cpf" name="cpf" class="form-control" required />
+                <span asp-validation-for="Cpf" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="DataNascimento" class="control-label"></label>
+                <input asp-for="DataNascimento" class="form-control" type="date" required />
+                <span asp-validation-for="DataNascimento" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="NomeResponsavel" class="control-label"></label>
+                <input asp-for="NomeResponsavel" class="form-control" required />
+                <span asp-validation-for="NomeResponsavel" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Sexo" class="control-label"></label>
+                <select asp-for="Sexo" class="form-control" required>
+                    <option value="">Selecione uma opção...</option>
+                    <option value="F">Feminino</option>
+                    <option value="M">Masculino</option>
+                    <option value="O">Outros</option>
+                </select>
+                <span asp-validation-for="Sexo" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Etnia" class="control-label"></label>
+                <select asp-for="Etnia" class="form-control" required>
+                    <option value="">Selecione uma opção...</option>
+                    <option value="1">Pardo</option>
+                    <option value="2">Preto</option>
+                    <option value="3">Branco</option>
+                    <option value="4">Amarelo</option>
+                    <option value="5">Outro</option>
+                </select>
+                <span asp-validation-for="Etnia" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Endereco" class="control-label"></label>
+                <input asp-for="Endereco" class="form-control" required />
+                <span asp-validation-for="Endereco" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Bairro" class="control-label"></label>
+                <input asp-for="Bairro" class="form-control" required />
+                <span asp-validation-for="Bairro" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="IdCidade" class="control-label"></label>
+                <select asp-for="IdCidade" class="form-control" asp-items="ViewBag.IdCidade"></select>
+            </div>
+            <div class="form-group">
+                <label asp-for="TelResidencial" class="control-label"></label>
+                <input asp-for="TelResidencial" class="form-control" />
+                <span asp-validation-for="TelResidencial" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TelComercial" class="control-label"></label>
+                <input asp-for="TelComercial" class="form-control" />
+                <span asp-validation-for="TelComercial" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="TelCelular" class="control-label"></label>
+                <input asp-for="TelCelular" class="form-control" required />
+                <span asp-validation-for="TelCelular" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label asp-for="Profissao" class="control-label"></label>
+                <input asp-for="Profissao" class="form-control" />
+                <span asp-validation-for="Profissao" class="text-danger"></span>
+            </div>
+            <br />
+            <div class="form-group">
+                <label asp-for="FlgAtleta" class="control-label d-block">Você é atleta?</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" asp-for="FlgAtleta" value="true" id="FlgAtletaSim" />
+                    <label class="form-check-label" for="FlgAtletaSim">Sim</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" asp-for="FlgAtleta" value="false" id="FlgAtletaNao" />
+                    <label class="form-check-label" for="FlgAtletaNao">Não</label>
+                </div>
+                <span asp-validation-for="FlgAtleta" class="text-danger d-block"></span>
+            </div>
+            <div class="form-group mt-3">
+                <label asp-for="FlgGestante" class="control-label d-block">Você é gestante?</label>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" asp-for="FlgGestante" value="true" id="FlgGestanteSim" />
+                    <label class="form-check-label" for="FlgGestanteSim">Sim</label>
+                </div>
+                <div class="form-check form-check-inline">
+                    <input class="form-check-input" type="radio" asp-for="FlgGestante" value="false" id="FlgGestanteNao" />
+                    <label class="form-check-label" for="FlgGestanteNao">Não</label>
+                </div>
+                <span asp-validation-for="FlgGestante" class="text-danger d-block"></span>
+            </div>
+        </form>
+    </div>
+</div>
+<br />
+<div class="d-flex gap-2 pt-3">
+    <button type="submit" form="formCadastroPaciente" class="btn btn-primary">
+        Salvar
+    </button>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left-short"></i> Voltar para Lista de Pacientes
+    </a>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
