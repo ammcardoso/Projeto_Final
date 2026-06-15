@@ -4,30 +4,26 @@
     ViewData["Title"] = "Create";
 }
 
-<h1>Criar</h1>
+<h1>Cadastrar</h1>
 
 <h4>Profissional</h4>
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Create">
+        <form asp-action="Create" id="formCadastroProfissional">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <div class="form-group">
-                <label asp-for="IdTipoProfissional" class="control-label"></label>
-                <input asp-for="IdTipoProfissional" class="form-control" />
-                <span asp-validation-for="IdTipoProfissional" class="text-danger"></span>
+                <label asp-for="IdContratoNavigation.IdPlano" class="control-label fw-semibold">Plano de Contrato</label>
+                <select asp-for="IdContratoNavigation.IdPlano" class="form-control" asp-items="ViewBag.IdPlano">
+                    <option value="">-- Selecione o Plano --</option>
+                </select>
             </div>
             <div class="form-group">
-                <label asp-for="IdContratoNavigation.IdPlano" class="control-label"></label>
-                <select asp-for="IdContratoNavigation.IdPlano" class="form-control" asp-items="ViewBag.IdPlano"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="IdTipoAcesso" class="control-label"></label>
-                <select asp-for="IdTipoAcesso" class ="form-control" asp-items="ViewBag.IdTipoAcesso"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="IdCidade" class="control-label"></label>
-                <select asp-for="IdCidade" class ="form-control" asp-items="ViewBag.IdCidade"></select>
+                <label asp-for="IdCidade" class="control-label fw-semibold">Cidade</label>
+                <select asp-for="IdCidade" class="form-control" asp-items="ViewBag.IdCidade">
+                    <option value="">-- Selecione a Cidade --</option>
+                </select>
+                <span asp-validation-for="IdCidade" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Nome" class="control-label"></label>
@@ -43,11 +39,6 @@
                 <label asp-for="CrmCrn" class="control-label"></label>
                 <input asp-for="CrmCrn" class="form-control" />
                 <span asp-validation-for="CrmCrn" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Especialidade" class="control-label"></label>
-                <input asp-for="Especialidade" class="form-control" />
-                <span asp-validation-for="Especialidade" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Logradouro" class="control-label"></label>
@@ -104,15 +95,16 @@
                 <input asp-for="Salario" class="form-control" />
                 <span asp-validation-for="Salario" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="btn btn-primary" />
-            </div>
         </form>
     </div>
 </div>
-
-<div>
-    <a asp-action="Index">>Lista de Profissionais</a>
+<div class="d-flex gap-2 pt-3">
+    <button type="submit" form="formCadastroProfissional" class="btn btn-primary">
+        Cadastrar
+    </button>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left-short"></i> Voltar
+    </a>
 </div>
 
 @section Scripts {

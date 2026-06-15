@@ -10,6 +10,7 @@ public partial class TbContrato
 {
     public int IdContrato { get; set; }
 
+    [Display(Name = "Plano")]
     public int IdPlano { get; set; }
 
     public DateTime? DataInicio { get; set; }

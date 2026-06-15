@@ -10,6 +10,7 @@ public partial class TbPlano
 {
     [Display(Name = "Plano")]
     public int IdPlano { get; set; }
+
     [Display(Name = "Plano")]
     public string Nome { get; set; }
 

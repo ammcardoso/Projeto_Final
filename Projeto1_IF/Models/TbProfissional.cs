@@ -14,6 +14,7 @@ public partial class TbProfissional
     [Display(Name = "Área de Atuação")]
     public int? IdTipoProfissional { get; set; }
 
+    [Display(Name = "Plano")]
     public int IdContrato { get; set; }
 
     [Display(Name = "Tipo de Acesso")]
@@ -30,12 +31,14 @@ public partial class TbProfissional
 
     public string Cpf { get; set; }
 
+    [Display(Name = "Crm")]
     public string CrmCrn { get; set; }
 
     public string Especialidade { get; set; }
 
     public string Logradouro { get; set; }
 
+    [Display(Name = "Número")]
     public string Numero { get; set; }
 
     public string Bairro { get; set; }

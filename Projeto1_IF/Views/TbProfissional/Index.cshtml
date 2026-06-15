@@ -4,20 +4,16 @@
     ViewData["Title"] = "Index";
 }
 
-<h1>Index</h1>
+<h1>Lista de Profissionais</h1>
 
 <p>
-    <a asp-action="Create">Create New</a>
+    <a asp-action="Create" class="btn btn-primary">
+        <i class="bi bi-plus-lg"></i> Cadastrar Profissional
+    </a>
 </p>
 <table class="table">
     <thead>
         <tr>
-            <th>
-                @Html.DisplayNameFor(model => model.IdTipoProfissional)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdUser)
-            </th>
             <th>
                 @Html.DisplayNameFor(model => model.Nome)
             </th>
@@ -26,9 +22,6 @@
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.CrmCrn)
-            </th>
-            <th>
-                @Html.DisplayNameFor(model => model.Especialidade)
             </th>
             <th>
                 @Html.DisplayNameFor(model => model.Logradouro)
@@ -69,21 +62,12 @@
             <th>
                 @Html.DisplayNameFor(model => model.IdContratoNavigation)
             </th>
-            <th>
-                @Html.DisplayNameFor(model => model.IdTipoAcessoNavigation)
-            </th>
             <th></th>
         </tr>
     </thead>
     <tbody>
 @foreach (var item in Model) {
         <tr>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdTipoProfissional)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.IdUser)
-            </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Nome)
             </td>
@@ -92,9 +76,6 @@
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.CrmCrn)
-            </td>
-            <td>
-                @Html.DisplayFor(modelItem => item.Especialidade)
             </td>
             <td>
                 @Html.DisplayFor(modelItem => item.Logradouro)
@@ -130,18 +111,25 @@
                 @Html.DisplayFor(modelItem => item.Salario)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.IdCidadeNavigation.IdCidade)
+                @Html.DisplayFor(modelItem => item.IdCidadeNavigation.Nome)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.IdContratoNavigation.IdContrato)
+                @Html.DisplayFor(modelItem => item.IdContratoNavigation.IdPlanoNavigation.Nome)
             </td>
             <td>
-                @Html.DisplayFor(modelItem => item.IdTipoAcessoNavigation.Nome)
-            </td>
-            <td>
-                <a asp-action="Edit" asp-route-id="@item.IdProfissional">Edit</a> |
-                <a asp-action="Details" asp-route-id="@item.IdProfissional">Details</a> |
-                <a asp-action="Delete" asp-route-id="@item.IdProfissional">Delete</a>
+                <div class="d-flex gap-2">
+                    <a asp-action="Edit" asp-route-id="@item.IdProfissional" class="btn btn-primary btn-sm" title="Editar">
+                        <i class="bi bi-pencil-square me-1"></i> Editar
+                    </a>
+
+                    <a asp-action="Details" asp-route-id="@item.IdProfissional" class="btn btn-warning btn-sm text-dark" title="Detalhes">
+                        <i class="bi bi-eye me-1"></i> Detalhes
+                    </a>
+
+                    <a asp-action="Delete" asp-route-id="@item.IdProfissional" class="btn btn-danger btn-sm" title="Excluir">
+                        <i class="bi bi-trash me-1"></i> Excluir
+                    </a>
+                </div>
             </td>
         </tr>
 }

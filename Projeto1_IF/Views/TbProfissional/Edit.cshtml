@@ -10,33 +10,20 @@
 <hr />
 <div class="row">
     <div class="col-md-4">
-        <form asp-action="Edit">
+        <form asp-action="Edit" id="formCadastroProfissional">
             <div asp-validation-summary="ModelOnly" class="text-danger"></div>
             <input type="hidden" asp-for="IdProfissional" />
-            <div class="form-group">
-                <label asp-for="IdTipoProfissional" class="control-label"></label>
-                <input asp-for="IdTipoProfissional" class="form-control" />
-                <span asp-validation-for="IdTipoProfissional" class="text-danger"></span>
-            </div>
             <div class="form-group">
                 <label asp-for="IdContrato" class="control-label"></label>
                 <select asp-for="IdContrato" class="form-control" asp-items="ViewBag.IdContrato"></select>
                 <span asp-validation-for="IdContrato" class="text-danger"></span>
             </div>
             <div class="form-group">
-                <label asp-for="IdTipoAcesso" class="control-label"></label>
-                <select asp-for="IdTipoAcesso" class="form-control" asp-items="ViewBag.IdTipoAcesso"></select>
-                <span asp-validation-for="IdTipoAcesso" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="IdCidade" class="control-label"></label>
-                <select asp-for="IdCidade" class="form-control" asp-items="ViewBag.IdCidade"></select>
+                <label asp-for="IdCidade" class="control-label fw-semibold">Cidade</label>
+                <select asp-for="IdCidade" class="form-control" asp-items="ViewBag.IdCidade">
+                    <option value="">-- Selecione a Cidade --</option>
+                </select>
                 <span asp-validation-for="IdCidade" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="IdUser" class="control-label"></label>
-                <input asp-for="IdUser" class="form-control" />
-                <span asp-validation-for="IdUser" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Nome" class="control-label"></label>
@@ -45,18 +32,13 @@
             </div>
             <div class="form-group">
                 <label asp-for="Cpf" class="control-label"></label>
-                <input asp-for="Cpf" class="form-control" />
+                <input asp-for="Cpf" class="form-control" readonly/>
                 <span asp-validation-for="Cpf" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="CrmCrn" class="control-label"></label>
                 <input asp-for="CrmCrn" class="form-control" />
                 <span asp-validation-for="CrmCrn" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Especialidade" class="control-label"></label>
-                <input asp-for="Especialidade" class="form-control" />
-                <span asp-validation-for="Especialidade" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Logradouro" class="control-label"></label>
@@ -113,15 +95,16 @@
                 <input asp-for="Salario" class="form-control" />
                 <span asp-validation-for="Salario" class="text-danger"></span>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Save" class="btn btn-primary" />
-            </div>
         </form>
     </div>
 </div>
-
-<div>
-    <a asp-action="Index">Back to List</a>
+<div class="d-flex gap-2 pt-3">
+    <button type="submit" form="formCadastroProfissional" class="btn btn-primary">
+        Salvar
+    </button>
+    <a asp-action="Index" class="btn btn-secondary">
+        <i class="bi bi-arrow-left-short"></i> Voltar
+    </a>
 </div>
 
 @section Scripts {
