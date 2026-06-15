@@ -49,8 +49,36 @@ namespace Projeto1_IF.Controllers
                 return RedirectToAction(nameof(Create));
             }
 
-            var db_IFContext = _context.TbProfissionals.Include(t => t.IdCidadeNavigation).Include(t => t.IdContratoNavigation).Include(t => t.IdTipoAcessoNavigation);
-            return View(await db_IFContext.ToListAsync());
+            // Build base query with includes
+            var query = _context.TbProfissionals
+                .Include(t => t.IdCidadeNavigation)
+                .Include(t => t.IdContratoNavigation)
+                .Include(t => t.IdTipoAcessoNavigation)
+                .AsNoTracking()
+                .AsQueryable();
+
+            // If user is an admin or GerenteGeral, show all
+            if (User.IsInRole("Admin") || User.IsInRole("GerenteGeral"))
+            {
+                return View(await query.ToListAsync());
+            }
+
+            // GerenteMedico sees only medicos (IdTipoProfissional == 1)
+            if (User.IsInRole("GerenteMedico"))
+            {
+                var list = await query.Where(p => p.IdTipoProfissional == 1).ToListAsync();
+                return View(list);
+            }
+
+            // GerenteNutricionista sees only nutricionistas (IdTipoProfissional == 2)
+            if (User.IsInRole("GerenteNutricionista"))
+            {
+                var list = await query.Where(p => p.IdTipoProfissional == 2).ToListAsync();
+                return View(list);
+            }
+
+            // Default: return all
+            return View(await query.ToListAsync());
         }
 
         // GET: TbProfissional/Details/5
@@ -71,10 +99,10 @@ namespace Projeto1_IF.Controllers
             {
                 return NotFound();
             }
-
-            // Allow access only to owners or admins
+            // Allow access to owners or managers within their scope
             var email = User.Identity?.Name;
-            if (!User.IsInRole("Admin") && (User.IsInRole("Medico") || User.IsInRole("Nutricionista")))
+            // Owners (Medico or Nutricionista) can view their own record
+            if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
             {
                 if (string.IsNullOrEmpty(email))
                     return NotFound();
@@ -84,9 +112,24 @@ namespace Projeto1_IF.Controllers
                 var user = await userManager.FindByEmailAsync(email);
                 if (user == null || tbProfissional.IdUser != user.Id)
                     return NotFound();
+                return View(tbProfissional);
             }
 
-            return View(tbProfissional);
+            // Managers
+            if (User.IsInRole("GerenteGeral"))
+            {
+                return View(tbProfissional);
+            }
+            if (User.IsInRole("GerenteMedico") && tbProfissional.IdTipoProfissional == 1)
+            {
+                return View(tbProfissional);
+            }
+            if (User.IsInRole("GerenteNutricionista") && tbProfissional.IdTipoProfissional == 2)
+            {
+                return View(tbProfissional);
+            }
+
+            return Forbid();
         }
 
         // GET: TbProfissional/Create
@@ -175,11 +218,7 @@ namespace Projeto1_IF.Controllers
             }
             // Ensure only owner or admin can edit
             var email = User.Identity?.Name;
-            if (User.IsInRole("Admin"))
-            {
-                // admin ok
-            }
-            else if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+            if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
             {
                 if (string.IsNullOrEmpty(email))
                     return NotFound();
@@ -231,11 +270,7 @@ namespace Projeto1_IF.Controllers
             }
             // Ensure only owner or admin can update
             var email = User.Identity?.Name;
-            if (User.IsInRole("Admin"))
-            {
-                // ok
-            }
-            else if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+            if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
             {
                 if (string.IsNullOrEmpty(email))
                     return NotFound();
@@ -263,28 +298,85 @@ namespace Projeto1_IF.Controllers
                 return Forbid();
             }
 
-            if (await TryUpdateModelAsync<TbProfissional>(
-                tbProfissional,
-                "",
-                s => s.IdProfissional,
-                s => s.IdTipoAcesso,
-                s => s.IdCidade,
-                s => s.Nome,
-                // CPF must not be updated during edit
-                // s => s.Cpf,
-                s => s.CrmCrn,
-                s => s.Especialidade,
-                s => s.Logradouro,
-                s => s.Numero,
-                s => s.Bairro,
-                s => s.Cep,
-                s => s.Cidade,
-                s => s.Estado,
-                s => s.Ddd1,
-                s => s.Ddd2,
-                s => s.Telefone1,
-                s => s.Telefone2,
-                s => s.Salario))
+            // Allow CPF update for admins and manager roles; professionals cannot change CPF
+            bool canEditCpf = User.IsInRole("GerenteGeral") || User.IsInRole("GerenteMedico") || User.IsInRole("GerenteNutricionista");
+
+            if (canEditCpf)
+            {
+                if (await TryUpdateModelAsync<TbProfissional>(
+                    tbProfissional,
+                    "",
+                    s => s.IdProfissional,
+                    s => s.IdTipoAcesso,
+                    s => s.IdCidade,
+                    s => s.Nome,
+                    s => s.Cpf,
+                    s => s.CrmCrn,
+                    s => s.Especialidade,
+                    s => s.Logradouro,
+                    s => s.Numero,
+                    s => s.Bairro,
+                    s => s.Cep,
+                    s => s.Cidade,
+                    s => s.Estado,
+                    s => s.Ddd1,
+                    s => s.Ddd2,
+                    s => s.Telefone1,
+                    s => s.Telefone2,
+                    s => s.Salario))
+                {
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        ModelState.AddModelError("",
+                            "Unable to save changes. " +
+                            "Try again, and if the problem persists, " +
+                            "see your system administrator." + ex.ToString());
+                    }
+                }
+            }
+            else
+            {
+                if (await TryUpdateModelAsync<TbProfissional>(
+                    tbProfissional,
+                    "",
+                    s => s.IdProfissional,
+                    s => s.IdTipoAcesso,
+                    s => s.IdCidade,
+                    s => s.Nome,
+                    // CPF not included for professionals
+                    s => s.CrmCrn,
+                    s => s.Especialidade,
+                    s => s.Logradouro,
+                    s => s.Numero,
+                    s => s.Bairro,
+                    s => s.Cep,
+                    s => s.Cidade,
+                    s => s.Estado,
+                    s => s.Ddd1,
+                    s => s.Ddd2,
+                    s => s.Telefone1,
+                    s => s.Telefone2,
+                    s => s.Salario))
+                {
+                    try
+                    {
+                        await _context.SaveChangesAsync();
+                        return RedirectToAction(nameof(Index));
+                    }
+                    catch (DbUpdateException ex)
+                    {
+                        ModelState.AddModelError("",
+                            "Unable to save changes. " +
+                            "Try again, and if the problem persists, " +
+                            "see your system administrator." + ex.ToString());
+                    }
+                }
+            }
             {
                 try
                 {
@@ -324,18 +416,13 @@ namespace Projeto1_IF.Controllers
                 return NotFound();
             }
 
-            // Allow admins or managers within scope to view delete page
-            if (User.IsInRole("Admin"))
-            {
-                return View(tbProfissional);
-            }
-
             // Professionals are not allowed to delete
             if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
             {
                 return Forbid();
             }
 
+            // Managers within scope can view delete page
             if (User.IsInRole("GerenteGeral"))
             {
                 return View(tbProfissional);
@@ -364,16 +451,12 @@ namespace Projeto1_IF.Controllers
             }
             try
             {
-                // Allow admins or managers within scope to delete
-                if (User.IsInRole("Admin"))
-                {
-                    // ok
-                }
-                else if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+                // Only managers within scope can delete; professionals cannot
+                if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
                 {
                     return Forbid();
                 }
-                else if (User.IsInRole("GerenteGeral"))
+                if (User.IsInRole("GerenteGeral"))
                 {
                     // ok
                 }
@@ -388,6 +471,14 @@ namespace Projeto1_IF.Controllers
                 else
                 {
                     return Forbid();
+                }
+
+                // Check again before deleting
+                var hasPatientsConfirmed = await _context.TbMedicoPacientes.AnyAsync(mp => mp.IdProfissional == tbProfissional.IdProfissional);
+                if (hasPatientsConfirmed)
+                {
+                    ModelState.AddModelError("", "Cannot delete a professional who has patients assigned.");
+                    return RedirectToAction(nameof(Delete), new { id = id, saveChangesError = true });
                 }
 
                 _context.TbProfissionals.Remove(tbProfissional);
