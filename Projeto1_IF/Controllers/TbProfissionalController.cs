@@ -20,6 +20,35 @@ namespace Projeto1_IF.Controllers
         // GET: TbProfissional
         public async Task<IActionResult> Index()
         {
+            // If the current user is a professional (Medico or Nutricionista), redirect to their own details
+            if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+            {
+                var email = User.Identity?.Name;
+                if (!string.IsNullOrEmpty(email))
+                {
+                    var userManager = HttpContext.RequestServices.GetService<UserManager<IdentityUser>>();
+                    if (userManager != null)
+                    {
+                        var user = await userManager.FindByEmailAsync(email);
+                        if (user != null)
+                        {
+                            var prof = await _context.TbProfissionals
+                                .Include(t => t.IdCidadeNavigation)
+                                .Include(t => t.IdContratoNavigation)
+                                .Include(t => t.IdTipoAcessoNavigation)
+                                .AsNoTracking()
+                                .FirstOrDefaultAsync(p => p.IdUser == user.Id);
+                            if (prof != null)
+                            {
+                                return RedirectToAction(nameof(Details), new { id = prof.IdProfissional });
+                            }
+                        }
+                    }
+                }
+                // If we couldn't find a professional profile for this user, redirect to Create so they can add it (if allowed)
+                return RedirectToAction(nameof(Create));
+            }
+
             var db_IFContext = _context.TbProfissionals.Include(t => t.IdCidadeNavigation).Include(t => t.IdContratoNavigation).Include(t => t.IdTipoAcessoNavigation);
             return View(await db_IFContext.ToListAsync());
         }
@@ -43,12 +72,33 @@ namespace Projeto1_IF.Controllers
                 return NotFound();
             }
 
+            // Allow access only to owners or admins
+            var email = User.Identity?.Name;
+            if (!User.IsInRole("Admin") && (User.IsInRole("Medico") || User.IsInRole("Nutricionista")))
+            {
+                if (string.IsNullOrEmpty(email))
+                    return NotFound();
+                var userManager = HttpContext.RequestServices.GetService<UserManager<IdentityUser>>();
+                if (userManager == null)
+                    return NotFound();
+                var user = await userManager.FindByEmailAsync(email);
+                if (user == null || tbProfissional.IdUser != user.Id)
+                    return NotFound();
+            }
+
             return View(tbProfissional);
         }
 
         // GET: TbProfissional/Create
         public IActionResult Create()
         {
+            // Professionals should not create other professionals; allow access only to admins or managers
+            if (User.IsInRole("Medico") || User.IsInRole("Nutricionista") || User.IsInRole("GerenteMedico") || User.IsInRole("GerenteNutricionista") || User.IsInRole("GerenteGeral"))
+            {
+                // managers and professionals cannot create professionals here
+                return Forbid();
+            }
+
             ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "Nome");
             ViewData["IdPlano"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome");
             ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcessos, "IdTipoAcesso", "Nome");
@@ -64,6 +114,11 @@ namespace Projeto1_IF.Controllers
         {
             try
             {
+                if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+                {
+                    // Prevent professionals from creating other professionals
+                    return Forbid();
+                }
                 ModelState.Remove("IdUser");
                 ModelState.Remove("IdContrato");
                 if (ModelState.IsValid)
@@ -118,6 +173,40 @@ namespace Projeto1_IF.Controllers
             {
                 return NotFound();
             }
+            // Ensure only owner or admin can edit
+            var email = User.Identity?.Name;
+            if (User.IsInRole("Admin"))
+            {
+                // admin ok
+            }
+            else if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+            {
+                if (string.IsNullOrEmpty(email))
+                    return NotFound();
+                var userManager = HttpContext.RequestServices.GetService<UserManager<IdentityUser>>();
+                if (userManager == null)
+                    return NotFound();
+                var user = await userManager.FindByEmailAsync(email);
+                if (user == null || tbProfissional.IdUser != user.Id)
+                    return NotFound();
+            }
+            else if (User.IsInRole("GerenteGeral"))
+            {
+                // ok
+            }
+            else if (User.IsInRole("GerenteMedico") && tbProfissional.IdTipoProfissional == 1)
+            {
+                // ok
+            }
+            else if (User.IsInRole("GerenteNutricionista") && tbProfissional.IdTipoProfissional == 2)
+            {
+                // ok
+            }
+            else
+            {
+                return Forbid();
+            }
+
             ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "IdCidade", tbProfissional.IdCidade);
             ViewData["IdContrato"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano);
             ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcessos, "IdTipoAcesso", "Nome", tbProfissional.IdTipoAcesso);
@@ -140,6 +229,40 @@ namespace Projeto1_IF.Controllers
             {
                 return NotFound();
             }
+            // Ensure only owner or admin can update
+            var email = User.Identity?.Name;
+            if (User.IsInRole("Admin"))
+            {
+                // ok
+            }
+            else if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+            {
+                if (string.IsNullOrEmpty(email))
+                    return NotFound();
+                var userManager = HttpContext.RequestServices.GetService<UserManager<IdentityUser>>();
+                if (userManager == null)
+                    return NotFound();
+                var user = await userManager.FindByEmailAsync(email);
+                if (user == null || tbProfissional.IdUser != user.Id)
+                    return NotFound();
+            }
+            else if (User.IsInRole("GerenteGeral"))
+            {
+                // ok
+            }
+            else if (User.IsInRole("GerenteMedico") && tbProfissional.IdTipoProfissional == 1)
+            {
+                // ok
+            }
+            else if (User.IsInRole("GerenteNutricionista") && tbProfissional.IdTipoProfissional == 2)
+            {
+                // ok
+            }
+            else
+            {
+                return Forbid();
+            }
+
             if (await TryUpdateModelAsync<TbProfissional>(
                 tbProfissional,
                 "",
@@ -147,7 +270,8 @@ namespace Projeto1_IF.Controllers
                 s => s.IdTipoAcesso,
                 s => s.IdCidade,
                 s => s.Nome,
-                s => s.Cpf,
+                // CPF must not be updated during edit
+                // s => s.Cpf,
                 s => s.CrmCrn,
                 s => s.Especialidade,
                 s => s.Logradouro,
@@ -200,7 +324,32 @@ namespace Projeto1_IF.Controllers
                 return NotFound();
             }
 
-            return View(tbProfissional);
+            // Allow admins or managers within scope to view delete page
+            if (User.IsInRole("Admin"))
+            {
+                return View(tbProfissional);
+            }
+
+            // Professionals are not allowed to delete
+            if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+            {
+                return Forbid();
+            }
+
+            if (User.IsInRole("GerenteGeral"))
+            {
+                return View(tbProfissional);
+            }
+            if (User.IsInRole("GerenteMedico") && tbProfissional.IdTipoProfissional == 1)
+            {
+                return View(tbProfissional);
+            }
+            if (User.IsInRole("GerenteNutricionista") && tbProfissional.IdTipoProfissional == 2)
+            {
+                return View(tbProfissional);
+            }
+
+            return Forbid();
         }
 
         // POST: TbProfissional/Delete/5
@@ -215,6 +364,32 @@ namespace Projeto1_IF.Controllers
             }
             try
             {
+                // Allow admins or managers within scope to delete
+                if (User.IsInRole("Admin"))
+                {
+                    // ok
+                }
+                else if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+                {
+                    return Forbid();
+                }
+                else if (User.IsInRole("GerenteGeral"))
+                {
+                    // ok
+                }
+                else if (User.IsInRole("GerenteMedico") && tbProfissional.IdTipoProfissional == 1)
+                {
+                    // ok
+                }
+                else if (User.IsInRole("GerenteNutricionista") && tbProfissional.IdTipoProfissional == 2)
+                {
+                    // ok
+                }
+                else
+                {
+                    return Forbid();
+                }
+
                 _context.TbProfissionals.Remove(tbProfissional);
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));

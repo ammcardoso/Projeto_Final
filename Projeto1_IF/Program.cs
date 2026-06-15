@@ -20,6 +20,22 @@ builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
 
+// Seed roles and manager users (synchronously)
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+    try
+    {
+        Projeto1_IF.Data.SeedData.InitializeAsync(services).GetAwaiter().GetResult();
+    }
+    catch (Exception ex)
+    {
+        // log if needed
+        var logger = services.GetService<ILogger<Program>>();
+        logger?.LogError(ex, "An error occurred seeding the DB.");
+    }
+}
+
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
@@ -37,6 +53,7 @@ app.UseStaticFiles();
 
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
