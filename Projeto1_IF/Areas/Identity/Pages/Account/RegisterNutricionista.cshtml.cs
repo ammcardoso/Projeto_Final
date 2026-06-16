@@ -115,6 +115,14 @@ public class RegisterModelNutricionista : PageModel
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
+            // 1. AJUSTE: Remover do ModelState os campos que serão gerados via código.
+            // Sem isso, o ModelState.IsValid SEMPRE será false.
+            ModelState.Remove("Input.tbProfissional.IdUser");
+            ModelState.Remove("Input.tbProfissional.IdContrato");
+            ModelState.Remove("Input.tbProfissional.IdCidadeNavigation");
+            ModelState.Remove("Input.tbProfissional.IdTipoAcessoNavigation");
+            ModelState.Remove("Input.tbProfissional.IdContratoNavigation");
+
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
@@ -127,22 +135,27 @@ public class RegisterModelNutricionista : PageModel
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    //atribuindo a role de nutricionista ao usuario criado
+                    // ATENÇÃO: Use "Medico" no RegisterMedico e "Nutricionista" no RegisterNutricionista
                     await _userManager.AddToRoleAsync(user, "Nutricionista");
 
-                    //atribuindo o contrato ao profissional criado
+                    // 2. AJUSTE: Prevenção caso a Navigation não tenha sido instanciada pelo formulário
+                    if (Input.tbProfissional.IdContratoNavigation == null)
+                    {
+                        Input.tbProfissional.IdContratoNavigation = new TbContrato();
+                    }
+
+                    // Atribuindo o contrato ao profissional criado
                     Input.tbProfissional.IdContratoNavigation.DataInicio = DateTime.UtcNow;
                     Input.tbProfissional.IdContratoNavigation.DataFim = Input.tbProfissional.IdContratoNavigation.DataInicio.Value.AddMonths(1);
                     _context.Add(Input.tbProfissional.IdContratoNavigation);
                     await _context.SaveChangesAsync();
 
-                    //atribuindo o profissional ao usuario criado
+                    // Atribuindo o profissional ao usuario criado
                     Input.tbProfissional.IdUser = user.Id;
-
                     Input.tbProfissional.IdContrato = Input.tbProfissional.IdContratoNavigation.IdContrato;
+
                     _context.Add(Input.tbProfissional);
                     await _context.SaveChangesAsync();
-                    //
 
                     var userId = await _userManager.GetUserIdAsync(user);
                     var code = await _userManager.GenerateEmailConfirmationTokenAsync(user);
@@ -174,13 +187,15 @@ public class RegisterModelNutricionista : PageModel
         }
         catch (Exception ex)
         {
-            ModelState.AddModelError("", "Erro Geral." + ex.ToString());
+            // Se houver erro de banco (ex: tamanho de campo), a página não vai quebrar, vai mostrar essa mensagem.
+            ModelState.AddModelError("", "Erro ao tentar salvar o registro: " + ex.Message);
         }
-        // If we got this far, something failed, redisplay form
-        // Recarregar os dados
-        ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "Nome", Input.tbProfissional.IdCidade);
-        ViewData["IdPlano"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", Input.tbProfissional.IdContratoNavigation.IdPlano);
-        ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcessos, "IdTipoAcesso", "Nome", Input.tbProfissional.IdTipoAcesso);
+
+        // 3. AJUSTE: Uso de '?' para evitar NullReferenceException se a validação falhar e recarregar a tela
+        ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "Nome", Input.tbProfissional?.IdCidade);
+        ViewData["IdPlano"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", Input.tbProfissional?.IdContratoNavigation?.IdPlano);
+        ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcessos, "IdTipoAcesso", "Nome", Input.tbProfissional?.IdTipoAcesso);
+
         return Page();
     }
 

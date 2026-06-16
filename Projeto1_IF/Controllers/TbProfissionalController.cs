@@ -20,65 +20,56 @@ namespace Projeto1_IF.Controllers
         // GET: TbProfissional
         public async Task<IActionResult> Index()
         {
-            // If the current user is a professional (Medico or Nutricionista), redirect to their own details
-            if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+            string email = User.Identity!.Name!;
+
+            AspNetUser user = _context.AspNetUsers.Include(x => x.Roles).Single(u => u.Email == email)!;
+
+            var roles = user.Roles.Select(r => r.Name).ToList();
+
+            if (roles.Any(r => r == "GerenteMedico"))
             {
-                var email = User.Identity?.Name;
-                if (!string.IsNullOrEmpty(email))
+                // Build base query with includes
+                var query = _context.TbProfissionals
+                    .Include(t => t.IdCidadeNavigation)
+                    .Include(t => t.IdContratoNavigation)
+                    .Include(t => t.IdTipoAcessoNavigation)
+                    .AsNoTracking()
+                   
+                    .AsQueryable();
+
+                var result = (await query.ToListAsync()).Where(r => r.Especialidade.Equals("Medico")).ToList();
+                return View(result);
+            } else if (roles.Any(r => r == "GerenteNutricionista"))
                 {
-                    var userManager = HttpContext.RequestServices.GetService<UserManager<IdentityUser>>();
-                    if (userManager != null)
-                    {
-                        var user = await userManager.FindByEmailAsync(email);
-                        if (user != null)
-                        {
-                            var prof = await _context.TbProfissionals
-                                .Include(t => t.IdCidadeNavigation)
-                                .Include(t => t.IdContratoNavigation)
-                                .Include(t => t.IdTipoAcessoNavigation)
-                                .AsNoTracking()
-                                .FirstOrDefaultAsync(p => p.IdUser == user.Id);
-                            if (prof != null)
-                            {
-                                return RedirectToAction(nameof(Details), new { id = prof.IdProfissional });
-                            }
-                        }
-                    }
-                }
-                // If we couldn't find a professional profile for this user, redirect to Create so they can add it (if allowed)
-                return RedirectToAction(nameof(Create));
+               
+
+
+                // Build base query with includes
+                var query = _context.TbProfissionals
+                    .Include(t => t.IdCidadeNavigation)
+                    .Include(t => t.IdContratoNavigation)
+                    .Include(t => t.IdTipoAcessoNavigation)
+                    .AsNoTracking()
+
+                    .AsQueryable();
+
+                var result = (await query.ToListAsync()).Where(r => r.Especialidade.Equals("Nutricionista")).ToList();
+                return View(result);
             }
+                // Build base query with includes
+                var query2 = _context.TbProfissionals
+                    .Include(t => t.IdCidadeNavigation)
+                    .Include(t => t.IdContratoNavigation)
+                    .Include(t => t.IdTipoAcessoNavigation)
+                    .AsNoTracking()
+                    .AsQueryable();
 
-            // Build base query with includes
-            var query = _context.TbProfissionals
-                .Include(t => t.IdCidadeNavigation)
-                .Include(t => t.IdContratoNavigation)
-                .Include(t => t.IdTipoAcessoNavigation)
-                .AsNoTracking()
-                .AsQueryable();
 
-            // If user is an admin or GerenteGeral, show all
-            if (User.IsInRole("Admin") || User.IsInRole("GerenteGeral"))
-            {
-                return View(await query.ToListAsync());
-            }
+                // Default: return all
+                return View(await query2.ToListAsync());
 
-            // GerenteMedico sees only medicos (IdTipoProfissional == 1)
-            if (User.IsInRole("GerenteMedico"))
-            {
-                var list = await query.Where(p => p.IdTipoProfissional == 1).ToListAsync();
-                return View(list);
-            }
 
-            // GerenteNutricionista sees only nutricionistas (IdTipoProfissional == 2)
-            if (User.IsInRole("GerenteNutricionista"))
-            {
-                var list = await query.Where(p => p.IdTipoProfissional == 2).ToListAsync();
-                return View(list);
-            }
-
-            // Default: return all
-            return View(await query.ToListAsync());
+            
         }
 
         // GET: TbProfissional/Details/5
