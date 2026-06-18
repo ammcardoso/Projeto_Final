@@ -7,69 +7,33 @@ using Projeto1_IF.Models;
 
 namespace Projeto1_IF.Controllers
 {
-    [Authorize]
-    public class TbProfissionalController : Controller
+    [Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico")]
+    public class TbProfissionalController(db_IFContext context) : Controller
     {
-        private readonly db_IFContext _context;
-
-        public TbProfissionalController(db_IFContext context)
-        {
-            _context = context;
-        }
+        private readonly db_IFContext _context = context;
 
         // GET: TbProfissional
+        
         public async Task<IActionResult> Index()
         {
             string email = User.Identity!.Name!;
-
             AspNetUser user = _context.AspNetUsers.Include(x => x.Roles).Single(u => u.Email == email)!;
+            Role role = user.Roles.Select(r => Enum.Parse<Role>(r.Name)).SingleOrDefault();
 
-            var roles = user.Roles.Select(r => r.Name).ToList();
+            var query = _context.TbProfissionals
+                    .Include(t => t.IdCidadeNavigation)
+                    .Include(t => t.IdContratoNavigation)
+                    .Include(t => t.IdTipoAcessoNavigation)
+                    .AsNoTracking()
+                    .AsQueryable();
 
-            if (roles.Any(r => r == "GerenteMedico"))
+            return role switch
             {
-                // Build base query with includes
-                var query = _context.TbProfissionals
-                    .Include(t => t.IdCidadeNavigation)
-                    .Include(t => t.IdContratoNavigation)
-                    .Include(t => t.IdTipoAcessoNavigation)
-                    .AsNoTracking()
-                   
-                    .AsQueryable();
-
-                var result = (await query.ToListAsync()).Where(r => r.Especialidade.Equals("Medico")).ToList();
-                return View(result);
-            } else if (roles.Any(r => r == "GerenteNutricionista"))
-                {
-               
-
-
-                // Build base query with includes
-                var query = _context.TbProfissionals
-                    .Include(t => t.IdCidadeNavigation)
-                    .Include(t => t.IdContratoNavigation)
-                    .Include(t => t.IdTipoAcessoNavigation)
-                    .AsNoTracking()
-
-                    .AsQueryable();
-
-                var result = (await query.ToListAsync()).Where(r => r.Especialidade.Equals("Nutricionista")).ToList();
-                return View(result);
-            }
-                // Build base query with includes
-                var query2 = _context.TbProfissionals
-                    .Include(t => t.IdCidadeNavigation)
-                    .Include(t => t.IdContratoNavigation)
-                    .Include(t => t.IdTipoAcessoNavigation)
-                    .AsNoTracking()
-                    .AsQueryable();
-
-
-                // Default: return all
-                return View(await query2.ToListAsync());
-
-
-            
+                Role.GerenteMedico => View(await query.Where(x => x.Especialidade.Equals("Medico")).ToListAsync()),
+                Role.GerenteNutricionista => View(await query.Where(x => x.Especialidade.Equals("Nutricionista")).ToListAsync()),
+                Role.GerenteGeral => View(await query.ToListAsync()),
+                _ => throw new Exception($"[ ERROR ] - Role {role} é inválido do usuário: {email}"),
+            };
         }
 
         // GET: TbProfissional/Details/5
