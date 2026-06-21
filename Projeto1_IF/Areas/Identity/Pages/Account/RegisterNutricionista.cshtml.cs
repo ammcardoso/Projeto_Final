@@ -95,14 +95,14 @@ public class RegisterModelNutricionista : PageModel
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string? ConfirmPassword { get; set; }
 
-        public TbProfissional tbProfissional { get; set; }
+        public TbProfissional Profissional { get; set; }
     }
 
 
     public async Task OnGetAsync(string? returnUrl = null)
     {
         ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "Nome");
-        ViewData["IdPlano"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome");
+        ViewData["IdPlano"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome").Where(x => x.Text.StartsWith("Nutricional"));
         ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcessos, "IdTipoAcesso", "Nome");
         ReturnUrl = returnUrl;
         ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
@@ -115,13 +115,7 @@ public class RegisterModelNutricionista : PageModel
             returnUrl ??= Url.Content("~/");
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
-            // 1. AJUSTE: Remover do ModelState os campos que serão gerados via código.
-            // Sem isso, o ModelState.IsValid SEMPRE será false.
-            ModelState.Remove("Input.tbProfissional.IdUser");
-            ModelState.Remove("Input.tbProfissional.IdContrato");
-            ModelState.Remove("Input.tbProfissional.IdCidadeNavigation");
-            ModelState.Remove("Input.tbProfissional.IdTipoAcessoNavigation");
-            ModelState.Remove("Input.tbProfissional.IdContratoNavigation");
+            ModelState.Remove("Input.Profissional.IdUser");
 
             if (ModelState.IsValid)
             {
@@ -139,22 +133,27 @@ public class RegisterModelNutricionista : PageModel
                     await _userManager.AddToRoleAsync(user, "Nutricionista");
 
                     // 2. AJUSTE: Prevenção caso a Navigation não tenha sido instanciada pelo formulário
-                    if (Input.tbProfissional.IdContratoNavigation == null)
+                    if (Input.Profissional.IdContratoNavigation == null)
                     {
-                        Input.tbProfissional.IdContratoNavigation = new TbContrato();
+                        Input.Profissional.IdContratoNavigation = new TbContrato();
                     }
 
                     // Atribuindo o contrato ao profissional criado
-                    Input.tbProfissional.IdContratoNavigation.DataInicio = DateTime.UtcNow;
-                    Input.tbProfissional.IdContratoNavigation.DataFim = Input.tbProfissional.IdContratoNavigation.DataInicio.Value.AddMonths(1);
-                    _context.Add(Input.tbProfissional.IdContratoNavigation);
+                    Input.Profissional.Especialidade = Role.Medico.ToString();
+
+                    TbCidade cidade = await _context.TbCidades.FindAsync(Input.Profissional.IdCidade) ?? throw new Exception("[ ERROR ] - Cidade não encontrado.");
+
+                    Input.Profissional.Cidade = cidade.Nome;
+                    Input.Profissional.IdContratoNavigation.DataInicio = DateTime.UtcNow;
+                    Input.Profissional.IdContratoNavigation.DataFim = Input.Profissional.IdContratoNavigation.DataInicio.Value.AddMonths(1);
+                    _context.Add(Input.Profissional.IdContratoNavigation);
                     await _context.SaveChangesAsync();
 
                     // Atribuindo o profissional ao usuario criado
-                    Input.tbProfissional.IdUser = user.Id;
-                    Input.tbProfissional.IdContrato = Input.tbProfissional.IdContratoNavigation.IdContrato;
+                    Input.Profissional.IdUser = user.Id;
+                    Input.Profissional.IdContrato = Input.Profissional.IdContratoNavigation.IdContrato;
 
-                    _context.Add(Input.tbProfissional);
+                    _context.Add(Input.Profissional);
                     await _context.SaveChangesAsync();
 
                     var userId = await _userManager.GetUserIdAsync(user);
@@ -192,9 +191,9 @@ public class RegisterModelNutricionista : PageModel
         }
 
         // 3. AJUSTE: Uso de '?' para evitar NullReferenceException se a validação falhar e recarregar a tela
-        ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "Nome", Input.tbProfissional?.IdCidade);
-        ViewData["IdPlano"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", Input.tbProfissional?.IdContratoNavigation?.IdPlano);
-        ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcessos, "IdTipoAcesso", "Nome", Input.tbProfissional?.IdTipoAcesso);
+        ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "Nome", Input.Profissional?.IdCidade);
+        ViewData["IdPlano"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", Input.Profissional?.IdContratoNavigation?.IdPlano);
+        ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcessos, "IdTipoAcesso", "Nome", Input.Profissional?.IdTipoAcesso);
 
         return Page();
     }

@@ -1,109 +1,100 @@
 @page
 @model RegisterModelNutricionista
-@{
-    ViewData["Title"] = "Registro Nutricionista";
-}
-
-<h1>@ViewData["Title"]</h1>
+<h1>Cadastro nutricionista</h1>
 
 <div class="row">
     <div class="col-md-4">
         <form id="registerForm" asp-route-returnUrl="@Model.ReturnUrl" method="post">
-            <h2>Conta de Nutricionista</h2>
+            <h2>Conta de Médico</h2>
             <hr />
             <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
             <div class="form-floating mb-3">
-                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" placeholder="name@example.com" />
+                <input asp-for="Input.Email" class="form-control" autocomplete="username" aria-required="true" />
                 <label asp-for="Input.Email">Email</label>
                 <span asp-validation-for="Input.Email" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
-                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <select asp-for="Input.Profissional.IdContratoNavigation.IdPlano" class="form-control" asp-items="ViewBag.IdPlano"></select>
+                <label asp-for="Input.Profissional.IdContratoNavigation.IdPlano"></label>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Nome" class="form-control" />
+                <label asp-for="Input.Profissional.Nome"></label>
+                <span asp-validation-for="Input.Profissional.Nome" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Cpf" class="form-control" />
+                <label asp-for="Input.Profissional.Cpf"></label>
+                <span asp-validation-for="Input.Profissional.Cpf" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.CrmCrn" class="form-control" />
+                <label asp-for="Input.Profissional.CrmCrn"></label>
+                <span asp-validation-for="Input.Profissional.CrmCrn" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Cep" class="form-control" />
+                <label asp-for="Input.Profissional.Cep"></label>
+                <span asp-validation-for="Input.Profissional.Cep" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Estado" class="form-control" />
+                <label asp-for="Input.Profissional.Estado"></label>
+                <span asp-validation-for="Input.Profissional.Estado" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <select asp-for="Input.Profissional.IdCidade" class="form-control" asp-items="ViewBag.IdCidade"></select>
+                <label asp-for="Input.Profissional.IdCidade"></label>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Bairro" class="form-control" />
+                <label asp-for="Input.Profissional.Bairro"></label>
+                <span asp-validation-for="Input.Profissional.Bairro" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Logradouro" class="form-control" />
+                <label asp-for="Input.Profissional.Logradouro"></label>
+                <span asp-validation-for="Input.Profissional.Logradouro" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Numero" class="form-control" />
+                <label asp-for="Input.Profissional.Numero"></label>
+                <span asp-validation-for="Input.Profissional.Numero" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Ddd1" class="form-control" />
+                <label asp-for="Input.Profissional.Ddd1"></label>
+                <span asp-validation-for="Input.Profissional.Ddd1" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Telefone1" class="form-control" />
+                <label asp-for="Input.Profissional.Telefone1"></label>
+                <span asp-validation-for="Input.Profissional.Telefone1" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Ddd2" class="form-control" />
+                <label asp-for="Input.Profissional.Ddd2"></label>
+                <span asp-validation-for="Input.Profissional.Ddd2" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Telefone2" class="form-control" />
+                <label asp-for="Input.Profissional.Telefone2"></label>
+                <span asp-validation-for="Input.Profissional.Telefone2" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Profissional.Salario" class="form-control" />
+                <label asp-for="Input.Profissional.Salario"></label>
+                <span asp-validation-for="Input.Profissional.Salario" class="text-danger"></span>
+            </div>
+            <div class="form-floating mb-3">
+                <input asp-for="Input.Password" class="form-control" autocomplete="new-password" aria-required="true" />
                 <label asp-for="Input.Password">Password</label>
                 <span asp-validation-for="Input.Password" class="text-danger"></span>
             </div>
             <div class="form-floating mb-3">
-                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" placeholder="password" />
+                <input asp-for="Input.ConfirmPassword" class="form-control" autocomplete="new-password" aria-required="true" />
                 <label asp-for="Input.ConfirmPassword">Confirm Password</label>
                 <span asp-validation-for="Input.ConfirmPassword" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.IdContratoNavigation.IdPlano" class="control-label"></label>
-                <select asp-for="Input.tbProfissional.IdContratoNavigation.IdPlano" class="form-control" asp-items="ViewBag.IdPlano"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.IdCidade" class="control-label"></label>
-                <select asp-for="Input.tbProfissional.IdCidade" class="form-control" asp-items="ViewBag.IdCidade"></select>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Nome" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Nome" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Nome" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Cpf" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Cpf" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Cpf" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.CrmCrn" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.CrmCrn" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.CrmCrn" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Logradouro" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Logradouro" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Logradouro" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Numero" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Numero" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Numero" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Bairro" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Bairro" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Bairro" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Cep" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Cep" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Cep" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Cidade" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Cidade" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Cidade" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Estado" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Estado" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Estado" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Ddd1" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Ddd1" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Ddd1" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Ddd2" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Ddd2" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Ddd2" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Telefone1" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Telefone1" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Telefone1" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Telefone2" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Telefone2" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Telefone2" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Input.tbProfissional.Salario" class="control-label"></label>
-                <input asp-for="Input.tbProfissional.Salario" class="form-control" />
-                <span asp-validation-for="Input.tbProfissional.Salario" class="text-danger"></span>
             </div>
             <button id="registerSubmit" type="submit" class="w-100 btn btn-lg btn-primary">Cadastrar</button>
         </form>
@@ -119,27 +110,29 @@
                 {
                     <div>
                         <p>
-                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">article
-                            about setting up this ASP.NET application to support logging in via external services</a>.
+                            There are no external authentication services configured. See this <a href="https://go.microsoft.com/fwlink/?LinkID=532715">
+                            article
+                            about setting up this ASP.NET application to support logging in via external services
+                        </a>.
+                    </p>
+                </div>
+            }
+                else
+            {
+                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
+                    <div>
+                        <p>
+                            @foreach (var provider in Model.ExternalLogins!)
+                            {
+                                <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                            }
                         </p>
                     </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins!)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                                }
-                            </p>
-                        </div>
-                    </form>
-                }
+                </form>
             }
-        </section>
-    </div>
+        }
+    </section>
+</div>
 </div>
 
 @section Scripts {

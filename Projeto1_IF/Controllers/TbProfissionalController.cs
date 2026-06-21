@@ -24,6 +24,7 @@ public class TbProfissionalController(db_IFContext context) : Controller
         var query = _context.TbProfissionals
                 .Include(t => t.IdCidadeNavigation)
                 .Include(t => t.IdContratoNavigation)
+                .ThenInclude(t => t.IdPlanoNavigation)
                 .Include(t => t.IdTipoAcessoNavigation)
                 .AsNoTracking()
                 .AsQueryable();
@@ -49,6 +50,7 @@ public class TbProfissionalController(db_IFContext context) : Controller
         var tbProfissional = await _context.TbProfissionals
             .Include(t => t.IdCidadeNavigation)
             .Include(t => t.IdContratoNavigation)
+            .ThenInclude(t => t.IdPlanoNavigation)
             .Include(t => t.IdTipoAcessoNavigation)
             .AsNoTracking()
             .FirstOrDefaultAsync(m => m.IdProfissional == id);
@@ -139,14 +141,29 @@ public class TbProfissionalController(db_IFContext context) : Controller
         }
 
 
-        var tbProfissional = await _context.TbProfissionals.Include(t => t.IdContratoNavigation).FirstOrDefaultAsync(s => s.IdProfissional == id);
+        var tbProfissional = await _context.TbProfissionals.Include(t => t.IdContratoNavigation).ThenInclude(t => t.IdPlanoNavigation).FirstOrDefaultAsync(s => s.IdProfissional == id);
         if (tbProfissional == null)
         {
             return NotFound();
         }
+
+        if (User.IsInRole("Medico"))
+        {
+            ViewData["IdContrato"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano).Where(x => x.Text.StartsWith("Medico"));
+        }
+        else if (User.IsInRole("Nutricionista"))
+        {
+            ViewData["IdContrato"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano).Where(x => x.Text.StartsWith("Nutricional"));
+        }
+        else
+        {
+            ViewData["IdContrato"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano);
+        }
+        
+
         ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "Nome", tbProfissional.IdCidade);
-        ViewData["IdContrato"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano);
         ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcessos, "IdTipoAcesso", "Nome", tbProfissional.IdTipoAcesso);
+
         return View(tbProfissional);
     }
 
@@ -158,10 +175,21 @@ public class TbProfissionalController(db_IFContext context) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditPost(int? id)
     {
+        bool proprioPerfil = id == 0;
+        
         if (id == null)
         {
             return NotFound();
         }
+        else if (id == 0)
+        {
+            string email = User.Identity!.Name!;
+            AspNetUser user = await _context.AspNetUsers.Include(x => x.Roles).SingleOrDefaultAsync(u => u.Email == email) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado");
+            TbProfissional tbProfissional2 = await _context.TbProfissionals.SingleOrDefaultAsync(x => x.IdUser == user.Id) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado");
+
+            id = tbProfissional2.IdProfissional;
+        }
+
         var tbProfissional = await _context.TbProfissionals.Include(t => t.IdContratoNavigation).FirstOrDefaultAsync(s => s.IdProfissional == id);
         if (tbProfissional == null)
         {
@@ -192,7 +220,15 @@ public class TbProfissionalController(db_IFContext context) : Controller
             try
             {
                 await _context.SaveChangesAsync();
+                if (proprioPerfil)
+                {
+                    return RedirectToAction("Index", "Home");
+                }
+                else
+                {
+
                 return RedirectToAction(nameof(Index));
+                }
             }
             catch (DbUpdateException ex)
             {
@@ -205,6 +241,7 @@ public class TbProfissionalController(db_IFContext context) : Controller
         ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "IdCidade", tbProfissional.IdCidade);
         ViewData["IdContrato"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano);
         ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcessos, "IdTipoAcesso", "Nome", tbProfissional.IdTipoAcesso);
+
         return View(tbProfissional);
     }
 
@@ -220,12 +257,20 @@ public class TbProfissionalController(db_IFContext context) : Controller
         var tbProfissional = await _context.TbProfissionals
             .Include(t => t.IdCidadeNavigation)
             .Include(t => t.IdContratoNavigation)
+            .ThenInclude(t => t.IdPlanoNavigation)
             .Include(t => t.IdTipoAcessoNavigation)
             .AsNoTracking()
             .FirstOrDefaultAsync(m => m.IdProfissional == id);
         if (tbProfissional == null)
         {
             return NotFound();
+        }
+
+        bool hasPatient = await _context.TbMedicoPacientes.AnyAsync(mp => mp.IdProfissional == id);
+
+        if (hasPatient)
+        {
+            ModelState.AddModelError(string.Empty, "Não é possível excluir o profissional pois possui paciente.");
         }
 
         return View(tbProfissional);
@@ -237,7 +282,12 @@ public class TbProfissionalController(db_IFContext context) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
-        var tbProfissional = await _context.TbProfissionals.FindAsync(id);
+        var tbProfissional = await _context.TbProfissionals
+            .Include(t => t.IdCidadeNavigation)
+            .Include(t => t.IdContratoNavigation)
+            .Include(t => t.IdTipoAcessoNavigation)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(m => m.IdProfissional == id);
 
         if (tbProfissional == null)
         {

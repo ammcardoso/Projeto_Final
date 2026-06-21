@@ -18,7 +18,7 @@
                 <select asp-for="IdContrato" class="form-control" asp-items="ViewBag.IdContrato"></select>
                 <span asp-validation-for="IdContrato" class="text-danger"></span>
             </div>
-            
+
             <div class="form-group">
                 <label asp-for="Nome" class="control-label"></label>
                 <input asp-for="Nome" class="form-control" />
@@ -26,7 +26,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Cpf" class="control-label"></label>
-                <input asp-for="Cpf" class="form-control" readonly/>
+                <input asp-for="Cpf" class="form-control" readonly />
                 <span asp-validation-for="Cpf" class="text-danger"></span>
             </div>
             <div class="form-group">
@@ -55,16 +55,16 @@
                 <span asp-validation-for="Cep" class="text-danger"></span>
             </div>
             <div class="form-group">
+                <label asp-for="Estado" class="control-label"></label>
+                <input asp-for="Estado" class="form-control" />
+                <span asp-validation-for="Estado" class="text-danger"></span>
+            </div>
+            <div class="form-group">
                 <label asp-for="IdCidade" class="control-label fw-semibold">Cidade</label>
                 <select asp-for="IdCidade" class="form-control" asp-items="ViewBag.IdCidade">
                     <option value="">-- Selecione a Cidade --</option>
                 </select>
                 <span asp-validation-for="IdCidade" class="text-danger"></span>
-            </div>
-            <div class="form-group">
-                <label asp-for="Estado" class="control-label"></label>
-                <input asp-for="Estado" class="form-control" />
-                <span asp-validation-for="Estado" class="text-danger"></span>
             </div>
             <div class="form-group">
                 <label asp-for="Ddd1" class="control-label"></label>
@@ -98,11 +98,23 @@
     <button type="submit" form="formCadastroProfissional" class="btn btn-primary">
         Salvar
     </button>
-    <a asp-action="Index" class="btn btn-secondary">
-        <i class="bi bi-arrow-left-short"></i> Voltar
-    </a>
+    @if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+    {
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left-short"></i> Voltar
+        </a>
+    }
+    else
+    {
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left-short"></i> Voltar
+        </a>
+    }
+
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
 }

@@ -210,6 +210,8 @@ public class TbPacienteController(db_IFContext context, ILogger<HomeController> 
         }
         try
         {
+            var medicoPaciente = _context.TbMedicoPacientes.SingleOrDefault(x => x.IdPaciente == id) ?? throw new Exception("Paciente não encontrado");
+            _context.TbMedicoPacientes.Remove(medicoPaciente);
             _context.TbPacientes.Remove(tbPaciente);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
