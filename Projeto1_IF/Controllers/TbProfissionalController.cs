@@ -7,17 +7,19 @@ using Projeto1_IF.Models;
 
 namespace Projeto1_IF.Controllers;
 
-[Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico")]
+
+[Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico,Medico,Nutricionista")]
 public class TbProfissionalController(db_IFContext context) : Controller
 {
     private readonly db_IFContext _context = context;
 
     // GET: TbProfissional
+    [Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico")]
     public async Task<IActionResult> Index()
     {
         string email = User.Identity!.Name!;
-        AspNetUser user = await _context.AspNetUsers.Include(x => x.Roles).SingleOrDefaultAsync(u => u.Email == email) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado"); ;
-        Role role =  user.Roles.Select(x => Enum.Parse<Role>(x.Name)).SingleOrDefault();
+        AspNetUser user = await _context.AspNetUsers.Include(x => x.Roles).SingleOrDefaultAsync(u => u.Email == email) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado");
+        Role role = user.Roles.Select(x => Enum.Parse<Role>(x.Name)).SingleOrDefault();
 
         var query = _context.TbProfissionals
                 .Include(t => t.IdCidadeNavigation)
@@ -36,6 +38,7 @@ public class TbProfissionalController(db_IFContext context) : Controller
     }
 
     // GET: TbProfissional/Details/5
+    [Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico,Medico,Nutricionista")]
     public async Task<IActionResult> Details(int? id)
     {
         if (id == null)
@@ -58,6 +61,7 @@ public class TbProfissionalController(db_IFContext context) : Controller
     }
 
     // GET: TbProfissional/Create
+    [Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico")]
     public IActionResult Create()
     {
         ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "Nome");
@@ -71,6 +75,7 @@ public class TbProfissionalController(db_IFContext context) : Controller
     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
     [HttpPost]
     [ValidateAntiForgeryToken]
+    [Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico")]
     public async Task<IActionResult> Create([Bind("IdTipoProfissional,IdTipoAcesso,IdCidade,IdUser,Nome,Cpf,CrmCrn,Especialidade,Logradouro,Numero,Bairro,Cep,Cidade,Estado,Ddd1,Ddd2,Telefone1,Telefone2,Salario")] TbProfissional tbProfissional, [Bind("IdPlano")] TbContrato IdContratoNavigation)
     {
         try
@@ -116,19 +121,30 @@ public class TbProfissionalController(db_IFContext context) : Controller
     }
 
     // GET: TbProfissional/Edit/5
+    [Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico,Medico,Nutricionista")]
     public async Task<IActionResult> Edit(int? id)
+
     {
         if (id == null)
         {
             return RedirectToAction("Error", "Home");
         }
+        else if (id == 0)
+        {
+            string email = User.Identity!.Name!;
+            AspNetUser user = await _context.AspNetUsers.Include(x => x.Roles).SingleOrDefaultAsync(u => u.Email == email) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado");
+            TbProfissional tbProfissional2 = await _context.TbProfissionals.SingleOrDefaultAsync(x => x.IdUser == user.Id) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado");
+
+            id = tbProfissional2.IdProfissional;
+        }
+
 
         var tbProfissional = await _context.TbProfissionals.Include(t => t.IdContratoNavigation).FirstOrDefaultAsync(s => s.IdProfissional == id);
         if (tbProfissional == null)
         {
             return NotFound();
         }
-        ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "IdCidade", tbProfissional.IdCidade);
+        ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "Nome", tbProfissional.IdCidade);
         ViewData["IdContrato"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano);
         ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcessos, "IdTipoAcesso", "Nome", tbProfissional.IdTipoAcesso);
         return View(tbProfissional);
@@ -137,6 +153,7 @@ public class TbProfissionalController(db_IFContext context) : Controller
     // POST: TbProfissional/Edit/5
     // To protect from overposting attacks, enable the specific properties you want to bind to.
     // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
+    [Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico,Medico,Nutricionista")]
     [HttpPost, ActionName("Edit")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditPost(int? id)
@@ -192,6 +209,7 @@ public class TbProfissionalController(db_IFContext context) : Controller
     }
 
     // GET: TbProfissional/Delete/5
+    [Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico")]
     public async Task<IActionResult> Delete(int? id, bool? saveChangesError = false)
     {
         if (id == null)
@@ -215,11 +233,12 @@ public class TbProfissionalController(db_IFContext context) : Controller
 
     // POST: TbProfissional/Delete/5
     [HttpPost, ActionName("Delete")]
+    [Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico")]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> DeleteConfirmed(int id)
     {
         var tbProfissional = await _context.TbProfissionals.FindAsync(id);
-        
+
         if (tbProfissional == null)
         {
             return RedirectToAction(nameof(Index));

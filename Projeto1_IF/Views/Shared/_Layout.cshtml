@@ -36,6 +36,9 @@
                             <li class="nav-item">
                                 <a class="nav-link text-dark" asp-area="" asp-controller="tbPaciente" asp-action="Index">Paciente</a>
                             </li>
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="tbProfissional" asp-action="Edit" asp-route-id="0">Editar perfil</a>
+                            </li>
                         }
                         @if ((User.IsInRole("GerenteMedico") || User.IsInRole("GerenteNutricionista") || User.IsInRole("GerenteGeral")))
                         {
