@@ -65,7 +65,7 @@ public partial class TbPaciente
     [Display(Name = "Gestante")]
     public bool? FlgGestante { get; set; }
 
-    [Display(Name = "Gestante")]
+    [Display(Name = "Cidade")]
     public virtual TbCidade IdCidadeNavigation { get; set; }
 
     public virtual ICollection<TbAntropometrium> TbAntropometria { get; set; } = new List<TbAntropometrium>();

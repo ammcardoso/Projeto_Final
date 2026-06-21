@@ -31,13 +31,18 @@
                         <li class="nav-item">
                             <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
                         </li>
-                        @if (SignInManager.IsSignedIn(User) && (User.IsInRole("GerenteMedico") && User.IsInRole("GerenteNutricionista") && User.IsInRole("GerenteGeral")))
-                            {
-                                
+                        @if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+                        {
                             <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="tbProfissional" asp-action="Index">Profissionais</a>
-                        </li>
-                            }
+                                <a class="nav-link text-dark" asp-area="" asp-controller="tbPaciente" asp-action="Index">Paciente</a>
+                            </li>
+                        }
+                        @if ((User.IsInRole("GerenteMedico") || User.IsInRole("GerenteNutricionista") || User.IsInRole("GerenteGeral")))
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link text-dark" asp-area="" asp-controller="tbProfissional" asp-action="Index">Profissionais</a>
+                            </li>
+                        }
                     </ul>
                     <partial name="_LoginPartial" />
                 </div>

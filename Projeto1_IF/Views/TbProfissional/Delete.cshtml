@@ -106,6 +106,7 @@
         </dd>
     </dl>
     <form asp-action="Delete">
+        <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
         <input type="hidden" asp-for="IdProfissional" />
         <div class="d-flex gap-2">
             <button type="submit" class="btn btn-danger">
