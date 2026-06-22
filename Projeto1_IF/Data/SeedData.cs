@@ -20,7 +20,6 @@ namespace Projeto1_IF.Data
                 }
             }
 
-            // Create three manager users if they don't exist (use .com domains for easier login)
             await CreateManagerUser(userManager, "gerentemedico@local.com", "gerentemedico@local.com", "GerenteMedico");
             await CreateManagerUser(userManager, "gerentenutricionista@local.com", "gerentenutricionista@local.com", "GerenteNutricionista");
             await CreateManagerUser(userManager, "gerentegeral@local.com", "gerentegeral@local.com", "GerenteGeral");
