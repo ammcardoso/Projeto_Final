@@ -129,17 +129,16 @@ public class RegisterModelNutricionista : PageModel
                 {
                     _logger.LogInformation("User created a new account with password.");
 
-                    // ATENÇÃO: Use "Medico" no RegisterMedico e "Nutricionista" no RegisterNutricionista
                     await _userManager.AddToRoleAsync(user, "Nutricionista");
 
-                    // 2. AJUSTE: Prevenção caso a Navigation não tenha sido instanciada pelo formulário
+                    // Prevenção caso a Navigation não tenha sido instanciada pelo formulário
                     if (Input.Profissional.IdContratoNavigation == null)
                     {
                         Input.Profissional.IdContratoNavigation = new TbContrato();
                     }
 
                     // Atribuindo o contrato ao profissional criado
-                    Input.Profissional.Especialidade = Role.Medico.ToString();
+                    Input.Profissional.Especialidade = Role.Nutricionista.ToString();
 
                     TbCidade cidade = await _context.TbCidades.FindAsync(Input.Profissional.IdCidade) ?? throw new Exception("[ ERROR ] - Cidade não encontrado.");
 
@@ -190,7 +189,6 @@ public class RegisterModelNutricionista : PageModel
             ModelState.AddModelError("", "Erro ao tentar salvar o registro: " + ex.Message);
         }
 
-        // 3. AJUSTE: Uso de '?' para evitar NullReferenceException se a validação falhar e recarregar a tela
         ViewData["IdCidade"] = new SelectList(_context.TbCidades, "IdCidade", "Nome", Input.Profissional?.IdCidade);
         ViewData["IdPlano"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", Input.Profissional?.IdContratoNavigation?.IdPlano);
         ViewData["IdTipoAcesso"] = new SelectList(_context.TbTipoAcessos, "IdTipoAcesso", "Nome", Input.Profissional?.IdTipoAcesso);

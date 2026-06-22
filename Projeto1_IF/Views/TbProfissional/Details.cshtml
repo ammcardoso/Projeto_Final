@@ -112,7 +112,17 @@
     <a asp-action="Edit" class="btn btn-primary" asp-route-id="@Model?.IdProfissional">
         <i class="bi bi-pencil-square"></i> Editar
     </a>
-    <a asp-action="Index" class="btn btn-secondary">
-        <i class="bi bi-arrow-left-short"></i> Voltar 
-    </a>
+
+    @if (User.IsInRole("Medico") || User.IsInRole("Nutricionista"))
+    {
+        <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left-short"></i> Voltar
+        </a>
+    }
+    else
+    {
+        <a asp-action="Index" class="btn btn-secondary">
+            <i class="bi bi-arrow-left-short"></i> Voltar
+        </a>
+    }
 </div>

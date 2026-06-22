@@ -44,7 +44,15 @@ public class TbProfissionalController(db_IFContext context) : Controller
     {
         if (id == null)
         {
-            return NotFound();
+            return RedirectToAction("Error", "Home");
+        }
+        else if (id == 0)
+        {
+            string email = User.Identity!.Name!;
+            AspNetUser user = await _context.AspNetUsers.Include(x => x.Roles).SingleOrDefaultAsync(u => u.Email == email) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado");
+            TbProfissional tbProfissional2 = await _context.TbProfissionals.SingleOrDefaultAsync(x => x.IdUser == user.Id) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado");
+
+            id = tbProfissional2.IdProfissional;
         }
 
         var tbProfissional = await _context.TbProfissionals
@@ -125,21 +133,11 @@ public class TbProfissionalController(db_IFContext context) : Controller
     // GET: TbProfissional/Edit/5
     [Authorize(Roles = "GerenteGeral,GerenteNutricionista,GerenteMedico,Medico,Nutricionista")]
     public async Task<IActionResult> Edit(int? id)
-
     {
         if (id == null)
         {
             return RedirectToAction("Error", "Home");
         }
-        else if (id == 0)
-        {
-            string email = User.Identity!.Name!;
-            AspNetUser user = await _context.AspNetUsers.Include(x => x.Roles).SingleOrDefaultAsync(u => u.Email == email) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado");
-            TbProfissional tbProfissional2 = await _context.TbProfissionals.SingleOrDefaultAsync(x => x.IdUser == user.Id) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado");
-
-            id = tbProfissional2.IdProfissional;
-        }
-
 
         var tbProfissional = await _context.TbProfissionals.Include(t => t.IdContratoNavigation).ThenInclude(t => t.IdPlanoNavigation).FirstOrDefaultAsync(s => s.IdProfissional == id);
         if (tbProfissional == null)
@@ -147,17 +145,13 @@ public class TbProfissionalController(db_IFContext context) : Controller
             return NotFound();
         }
 
-        if (User.IsInRole("Medico"))
+        if (tbProfissional.Especialidade.Equals("Medico"))
         {
             ViewData["IdContrato"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano).Where(x => x.Text.StartsWith("Medico"));
         }
-        else if (User.IsInRole("Nutricionista"))
-        {
-            ViewData["IdContrato"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano).Where(x => x.Text.StartsWith("Nutricional"));
-        }
         else
         {
-            ViewData["IdContrato"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano);
+            ViewData["IdContrato"] = new SelectList(_context.TbPlanos, "IdPlano", "Nome", tbProfissional.IdContratoNavigation.IdPlano).Where(x => x.Text.StartsWith("Nutricional"));
         }
         
 
@@ -175,22 +169,12 @@ public class TbProfissionalController(db_IFContext context) : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> EditPost(int? id)
     {
-        bool proprioPerfil = id == 0;
-        
         if (id == null)
         {
             return NotFound();
         }
-        else if (id == 0)
-        {
-            string email = User.Identity!.Name!;
-            AspNetUser user = await _context.AspNetUsers.Include(x => x.Roles).SingleOrDefaultAsync(u => u.Email == email) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado");
-            TbProfissional tbProfissional2 = await _context.TbProfissionals.SingleOrDefaultAsync(x => x.IdUser == user.Id) ?? throw new Exception($"[ ERROR ] - Usuário {email} não encontrado");
 
-            id = tbProfissional2.IdProfissional;
-        }
-
-        var tbProfissional = await _context.TbProfissionals.Include(t => t.IdContratoNavigation).FirstOrDefaultAsync(s => s.IdProfissional == id);
+        var tbProfissional = await _context.TbProfissionals.Include(t => t.IdContratoNavigation).ThenInclude(t => t.IdPlanoNavigation).FirstOrDefaultAsync(s => s.IdProfissional == id);
         if (tbProfissional == null)
         {
             return NotFound();
@@ -198,6 +182,7 @@ public class TbProfissionalController(db_IFContext context) : Controller
         if (await TryUpdateModelAsync<TbProfissional>(
             tbProfissional,
             "",
+            s => s.IdContrato,
             s => s.IdProfissional,
             s => s.IdTipoAcesso,
             s => s.IdCidade,
@@ -220,7 +205,8 @@ public class TbProfissionalController(db_IFContext context) : Controller
             try
             {
                 await _context.SaveChangesAsync();
-                if (proprioPerfil)
+                
+                if (User.IsInRole("Nutricionista") || User.IsInRole("Medico"))
                 {
                     return RedirectToAction("Index", "Home");
                 }
@@ -304,7 +290,11 @@ public class TbProfissionalController(db_IFContext context) : Controller
 
         try
         {
+            var profissionalUser = await _context.AspNetUsers.FindAsync(tbProfissional.IdUser) ?? throw new Exception("Erro na exclusão do profissional");
+            
             _context.TbProfissionals.Remove(tbProfissional);
+            await _context.SaveChangesAsync();
+            _context.AspNetUsers.Remove(profissionalUser);
             await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
 
