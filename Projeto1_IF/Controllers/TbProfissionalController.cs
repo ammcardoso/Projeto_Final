@@ -187,7 +187,6 @@ public class TbProfissionalController(db_IFContext context) : Controller
             s => s.IdTipoAcesso,
             s => s.IdCidade,
             s => s.Nome,
-            s => s.Cpf,
             s => s.CrmCrn,
             s => s.Especialidade,
             s => s.Logradouro,
@@ -204,16 +203,19 @@ public class TbProfissionalController(db_IFContext context) : Controller
         {
             try
             {
-                await _context.SaveChangesAsync();
-                
                 if (User.IsInRole("Nutricionista") || User.IsInRole("Medico"))
                 {
+                    await _context.SaveChangesAsync();
                     return RedirectToAction("Index", "Home");
+                }
+                else if (await TryUpdateModelAsync<TbProfissional>(tbProfissional, "", s => s.Cpf))
+                {
+                    await _context.SaveChangesAsync();
+                    return RedirectToAction(nameof(Index));
                 }
                 else
                 {
-
-                return RedirectToAction(nameof(Index));
+                    throw new BadHttpRequestException("Não foi possível atualizar o profissional. Verifique os dados e tente novamente.");
                 }
             }
             catch (DbUpdateException ex)
@@ -291,7 +293,6 @@ public class TbProfissionalController(db_IFContext context) : Controller
         try
         {
             var profissionalUser = await _context.AspNetUsers.FindAsync(tbProfissional.IdUser) ?? throw new Exception("Erro na exclusão do profissional");
-            
             _context.TbProfissionals.Remove(tbProfissional);
             await _context.SaveChangesAsync();
             _context.AspNetUsers.Remove(profissionalUser);
